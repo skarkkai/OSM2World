@@ -56,6 +56,9 @@ public class RoadModule extends ConfigurableWorldModule {
 	/** determines whether right-hand or left-hand traffic is the default */
 	private static final boolean RIGHT_HAND_TRAFFIC_BY_DEFAULT = true;
 	
+	/** how much to lift roads above ground level */
+	private static final double ROAD_DEFAULT_HEIGHT = 1.0;
+
 	@Override
 	public void applyTo(MapData grid) {
 		
@@ -550,7 +553,15 @@ public class RoadModule extends ConfigurableWorldModule {
 		public void renderTo(Target<?> target) {
 			
 			Material material = getSurfaceForNode(node);
-			Collection<TriangleXYZ> triangles = super.getTriangulation();
+			Collection<TriangleXYZ> triangles = new ArrayList<>();
+			
+			// Lift junctions to the same height as roads
+			for (TriangleXYZ triangleXYZ : super.getTriangulation()) {
+				triangles.add(new TriangleXYZ(
+						triangleXYZ.v1.add(0, ROAD_DEFAULT_HEIGHT, 0),
+						triangleXYZ.v2.add(0, ROAD_DEFAULT_HEIGHT, 0),
+						triangleXYZ.v3.add(0, ROAD_DEFAULT_HEIGHT, 0)));
+			}
 			
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
@@ -1507,7 +1518,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			for (RoadPart part : asList(RoadPart.LEFT, RoadPart.RIGHT)) {
 							
-				double heightAboveRoad = 0;
+				double heightAboveRoad = ROAD_DEFAULT_HEIGHT;
 				
 				for (Lane lane : getLanes(part)) {
 					
